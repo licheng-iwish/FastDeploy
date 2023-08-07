@@ -61,12 +61,14 @@ det_model = fd.vision.ocr.DBDetector(
     det_model_file, det_params_file, runtime_option=det_option)
 
 # Set the preporcessing parameters
-det_model.preprocessor.max_side_len = 960
+det_model.preprocessor.max_side_len = 320
+# det_model.preprocessor.set_normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225], True)
 det_model.postprocessor.det_db_thresh = 0.3
 det_model.postprocessor.det_db_box_thresh = 0.6
 det_model.postprocessor.det_db_unclip_ratio = 1.5
 det_model.postprocessor.det_db_score_mode = "slow"
 det_model.postprocessor.use_dilation = False
+det_model.postprocessor.det_db_use_ploy = True
 
 # Read the image
 im = cv2.imread(args.image)

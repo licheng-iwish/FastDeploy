@@ -109,7 +109,7 @@ bool PPOCRv2::BatchPredict(const std::vector<cv::Mat>& images,
                            std::vector<fastdeploy::vision::OCRResult>* batch_result) {
   batch_result->clear();
   batch_result->resize(images.size());
-  std::vector<std::vector<std::array<int, 8>>> batch_boxes(images.size());
+  std::vector<std::vector<std::vector<std::array<int, 2>>>> batch_boxes(images.size());
 
   if (!detector_->BatchPredict(images, &batch_boxes)) {
     FDERROR << "There's error while detecting image in PPOCR." << std::endl;
@@ -124,7 +124,7 @@ bool PPOCRv2::BatchPredict(const std::vector<cv::Mat>& images,
   for(int i_batch = 0; i_batch < images.size(); ++i_batch) {
     fastdeploy::vision::OCRResult& ocr_result = (*batch_result)[i_batch];
     // Get croped images by detection result
-    const std::vector<std::array<int, 8>>& boxes = ocr_result.boxes;
+    const std::vector<std::vector<std::array<int, 2>>>& boxes = ocr_result.boxes;
     const cv::Mat& img = images[i_batch];
     std::vector<cv::Mat> image_list;
     if (boxes.size() == 0) {
