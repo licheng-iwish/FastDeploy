@@ -62,7 +62,6 @@ bool DBDetectorPostprocessor::SingleBatchPostprocessor(
 
   boxes = util_post_processor_.FilterTagDetRes(boxes, det_img_info);
 
-  std::cout << "boxes 65: " << boxes.size() << std::endl;
   // boxes to boxes_result
   for (int i = 0; i < boxes.size(); i++) {
     std::vector<std::array<int, 2>> new_box;
@@ -72,8 +71,6 @@ bool DBDetectorPostprocessor::SingleBatchPostprocessor(
     }
     boxes_result->emplace_back(new_box);
   }
-
-  std::cout << "boxes 69: " << (*boxes_result).size() << std::endl;
 
   return true;
 }
@@ -98,7 +95,6 @@ bool DBDetectorPostprocessor::Run(
                              &results->at(i_batch));
     tensor_data = tensor_data + length;
   } 
-  std::cout << "test 91: " << (*results)[0].size() << std::endl;
   return true;
 }
 

@@ -278,11 +278,13 @@ std::vector<std::vector<std::array<int, 2>>> PostProcessor::PloygonsFromBitmap(
     // start for unclip
     std::vector<std::vector<cv::Point>> paths = UnClip(box, det_db_unclip_ratio);
     if (paths.size() > 1) continue;
+
+    std::vector<cv::Point> path = paths[0];
     
     // end for unclip
 
     float ssid;
-    GetMiniBoxes(paths[0], ssid);
+    GetMiniBoxes(path, ssid);
     
     if (ssid < min_size + 2) continue;
 
@@ -290,13 +292,13 @@ std::vector<std::vector<std::array<int, 2>>> PostProcessor::PloygonsFromBitmap(
     int dest_height = pred.rows;
     std::vector<std::array<int, 2>> intcliparray;
 
-    for (int num_pt = 0; num_pt < box.size(); num_pt++) {
+    for (int num_pt = 0; num_pt < path.size(); num_pt++) {
       std::array<int, 2> a{
           int(clampf(
-              roundf(box[num_pt][0] / float(width) * float(dest_width)),
+              roundf(path[num_pt].x / float(width) * float(dest_width)),
               0, float(dest_width))),
           int(clampf(
-              roundf(box[num_pt][1] / float(height) * float(dest_height)),
+              roundf(path[num_pt].y / float(height) * float(dest_height)),
               0, float(dest_height)))};        
       intcliparray.push_back(a);
     }
