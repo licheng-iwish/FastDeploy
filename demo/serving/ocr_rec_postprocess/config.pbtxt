@@ -1,0 +1,30 @@
+name: "ocr_rec_postprocess"
+backend: "python"
+
+input [
+  {
+    name: "ocr_rec_post_in"
+    data_type: TYPE_FP32
+    dims: [ -1, -1, 6625 ]
+  }
+]
+
+output [
+  {
+    name: "ocr_rec_post_out1"
+    data_type: TYPE_STRING
+    dims: [ -1, 1 ]
+  },
+  {
+    name: "ocr_rec_post_out2"
+    data_type: TYPE_FP32
+    dims: [ -1, 1 ]
+  }
+]
+
+instance_group [
+  {
+      count: 1
+      kind: KIND_CPU
+  }
+]
