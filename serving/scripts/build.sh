@@ -44,7 +44,7 @@ shift
 done
 
 if [ -z $WITH_GPU ];then
-    WITH_GPU="ON"
+    WITH_GPU="OFF"
 fi
 
 if [ -z $docker_name ];then
