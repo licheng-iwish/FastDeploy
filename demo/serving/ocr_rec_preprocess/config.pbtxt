@@ -35,7 +35,7 @@ input [
   {
     # 印章文字检测框点集合
     name: "ocr_rec_pre_in6"
-    data_type: TYPE_UINT8
+    data_type: TYPE_INT32
     dims: [ -1 , 2]
   },
   {

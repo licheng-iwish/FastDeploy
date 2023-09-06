@@ -66,7 +66,6 @@ class TritonPythonModel:
 
         dir_name = os.path.dirname(os.path.realpath(__file__)) + "/"
         file_name = dir_name + "ppocr_keys_v1.txt"
-        #self.label_list = load_dict()
         self.postprocessor = fd.vision.ocr.RecognizerPostprocessor(file_name)
 
     def execute(self, requests):

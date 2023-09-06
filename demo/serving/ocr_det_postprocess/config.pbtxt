@@ -22,7 +22,7 @@ output [
   },
   {
     name: "ocr_det_post_out2"
-    data_type: TYPE_UINT8
+    data_type: TYPE_INT32
     dims: [ -1 , 2]
   },
   {

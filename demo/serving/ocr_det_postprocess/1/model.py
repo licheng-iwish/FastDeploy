@@ -63,6 +63,7 @@ class TritonPythonModel:
         print("postprocess output names:", self.output_names)
         self.postprocessor = fd.vision.ocr.DBDetectorPostprocessor()
         self.postprocessor.det_db_use_ploy = True
+        self.postprocessor.det_db_unclip_ratio = 2.0
 
     def execute(self, requests):
         """`execute` must be implemented in every Python model. `execute`
@@ -101,7 +102,7 @@ class TritonPythonModel:
                     origin1.append(r_i)
                     ocr_det_boxes_len.append(len(boxes))
                     ocr_det_boxes += boxes
-            out_tensor0 = pb_utils.Tensor(self.output_names[0], np.array(origin1, np.int32))
+            out_tensor0 = pb_utils.Tensor(self.output_names[0], np.array(origin1, np.uint8))
             out_tensor1 = pb_utils.Tensor(self.output_names[1], np.array(ocr_det_boxes, np.int32))
             out_tensor2 = pb_utils.Tensor(self.output_names[2], np.array(ocr_det_boxes_len, np.int32))
             inference_response = pb_utils.InferenceResponse(

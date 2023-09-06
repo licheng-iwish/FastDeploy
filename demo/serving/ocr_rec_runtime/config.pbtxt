@@ -37,13 +37,11 @@ instance_group [
 
 optimization {
   execution_accelerators {
-    # GPU推理配置， 配合KIND_GPU使用
     cpu_execution_accelerator : [
       {
-        name : "paddle"
+        name : "onnxruntime"
         # 设置推理并行计算线程数为4
         parameters { key: "cpu_threads" value: "4" }
       }
     ]
-  }
-}
+}}

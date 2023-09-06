@@ -98,6 +98,7 @@ class TritonPythonModel:
             origin0 = pb_utils.get_input_tensor_by_name(request,
                                                      self.input_names[3])
             origin0 = origin0.as_numpy()
+            data = []
             for i in range(origin0.shape[0]):
                 row_img = row_imgs[origin0[i]]
                 box = boxes[i]
