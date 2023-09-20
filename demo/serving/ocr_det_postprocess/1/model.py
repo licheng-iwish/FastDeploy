@@ -63,7 +63,7 @@ class TritonPythonModel:
         print("postprocess output names:", self.output_names)
         self.postprocessor = fd.vision.ocr.DBDetectorPostprocessor()
         self.postprocessor.det_db_use_ploy = True
-        self.postprocessor.det_db_unclip_ratio = 2.0
+        self.postprocessor.det_db_unclip_ratio = 3.5
 
     def execute(self, requests):
         """`execute` must be implemented in every Python model. `execute`
