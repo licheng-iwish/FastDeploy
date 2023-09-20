@@ -98,13 +98,11 @@ class TritonPythonModel:
         responses = []
         for request in requests:
             infer_outputs = []
-            for name in self.input_names:
-                infer_output = pb_utils.get_input_tensor_by_name(request, name)
-                if infer_output:
-                    infer_output = infer_output.as_numpy()
-                    infer_outputs.append(infer_output)
-
-            results = self.postprocess_.run(infer_outputs)
+            det_post_in1 = pb_utils.get_input_tensor_by_name(request, "det_post_in1")
+            det_post_in2 = pb_utils.get_input_tensor_by_name(request, "det_post_in2")
+            results = self.postprocess_.run([det_post_in1.as_numpy(), det_post_in2.as_numpy()])
+            sens = pb_utils.get_input_tensor_by_name(request, "sens").as_numpy()
+            print(sens[0])
             boxes, labels, origin0 = self.filter(results)
             out_box_tensor = pb_utils.Tensor(self.output_names[0], boxes)
             out_label_tensor = pb_utils.Tensor(self.output_names[1], labels)

@@ -3,6 +3,11 @@ backend: "python"
 
 input [
   {
+    name: "sens"
+    data_type: TYPE_UINT8
+    dims: [ -1 ]
+  },
+  {
     name: "det_post_in1"
     data_type: TYPE_FP32
     dims: [ -1, 6 ]
