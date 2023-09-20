@@ -89,8 +89,8 @@ class TritonPythonModel:
             #              π/2
             theta = 2 * pi * (j / unwrapped_width) + angle  # 起始角度
             for i in range(unwrapped_height):
-                radius = int((x0 * y0) / (((x0 ** 2) * (math.cos(theta) ** 2) + (y0 ** 2) * (
-                    math.sin(theta) ** 2)) ** 0.5))
+                radius = int((x0 * y0) / (((x0 ** 2) * (math.sin(theta) ** 2) + (y0 ** 2) * (
+                    math.cos(theta) ** 2)) ** 0.5))
                 unwrapped_radius = radius - i  # 2. don't forget
                 if clock_dir == 'clockwise':
                     x = unwrapped_radius * sin(theta) + x0 - 1  # 3. "sin" is 顺时针 but "cos" is 逆时针
@@ -98,7 +98,10 @@ class TritonPythonModel:
                 else:
                     x = unwrapped_radius * cos(theta) + x0 - 1
                     y = unwrapped_radius * sin(theta) + y0 - 1
-                unwrapped_img[i, j, :] = img[int(x), int(y), :]
+                if int(x) >= img.shape[0] or int(y) >= img.shape[1]:
+                    unwrapped_img[i, j, :] = 0
+                else:
+                    unwrapped_img[i, j, :] = img[int(x), int(y), :]
         if clock_dir == 'clockwise':
             return self.move_black(unwrapped_img)
         else:
