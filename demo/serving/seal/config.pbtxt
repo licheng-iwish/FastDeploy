@@ -17,31 +17,31 @@ input [
 output [
   {
     # 印章文字检测文字结果
-    name: "OCR_REC_POST_OUT1"
+    name: "OCR_REC_TEXT"
     data_type: TYPE_STRING
     dims: [ -1 ]
   },
   {
     # 印章文字检测可信度结果
-    name: "OCR_REC_POST_OUT2"
+    name: "OCR_REC_CONF"
     data_type: TYPE_FP32
     dims: [ -1 ]
   },
   {
     # 印章类型标签
-    name: "OCR_REC_POST_OUT3"
+    name: "LABELS"
     data_type: TYPE_UINT8
     dims: [ -1 ]
   },
   {
     # 印章检测框对应原图id
-    name: "OCR_REC_POST_OUT4"
+    name: "ORIGIN0"
     data_type: TYPE_UINT8
     dims: [ -1 ]
   },  
   {
     # 印章文字检测框对应印章检测框id
-    name: "OCR_REC_POST_OUT5"
+    name: "ORIGIN1"
     data_type: TYPE_UINT8
     dims: [ -1 ]
   }  
@@ -245,23 +245,23 @@ ensemble_scheduling {
       },            
       output_map {
         key: "ocr_rec_post_out1"
-        value: "OCR_REC_POST_OUT1"
+        value: "OCR_REC_TEXT"
       },
       output_map {
         key: "ocr_rec_post_out2"
-        value: "OCR_REC_POST_OUT2"
+        value: "OCR_REC_CONF"
       },
       output_map {
         key: "ocr_rec_post_out3"
-        value: "OCR_REC_POST_OUT3"
+        value: "LABELS"
       },
       output_map {
         key: "ocr_rec_post_out4"
-        value: "OCR_REC_POST_OUT4"
+        value: "ORIGIN0"
       },
       output_map {
         key: "ocr_rec_post_out5"
-        value: "OCR_REC_POST_OUT5"
+        value: "ORIGIN1"
       }
     }
   ]
