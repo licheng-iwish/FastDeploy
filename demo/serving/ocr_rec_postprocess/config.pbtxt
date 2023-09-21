@@ -3,9 +3,24 @@ backend: "python"
 
 input [
   {
-    name: "ocr_rec_post_in"
+    name: "ocr_rec_post_in1"
     data_type: TYPE_FP32
     dims: [ -1, -1, 6625 ]
+  },
+  {
+    name: "ocr_rec_post_in2"
+    data_type: TYPE_UINT8
+    dims: [ -1 ]
+  },
+  {
+    name: "ocr_rec_post_in3"
+    data_type: TYPE_UINT8
+    dims: [ -1 ]
+  },
+  {
+    name: "ocr_rec_post_in4"
+    data_type: TYPE_UINT8
+    dims: [ -1 ]
   }
 ]
 
@@ -13,13 +28,28 @@ output [
   {
     name: "ocr_rec_post_out1"
     data_type: TYPE_STRING
-    dims: [ -1, 1 ]
+    dims: [ -1 ]
   },
   {
     name: "ocr_rec_post_out2"
     data_type: TYPE_FP32
-    dims: [ -1, 1 ]
-  }
+    dims: [ -1 ]
+  },
+  {
+    name: "ocr_rec_post_out3"
+    data_type: TYPE_UINT8
+    dims: [ -1 ]
+  },
+  {
+    name: "ocr_rec_post_out4"
+    data_type: TYPE_UINT8
+    dims: [ -1 ]
+  },
+  {
+    name: "ocr_rec_post_out5"
+    data_type: TYPE_UINT8
+    dims: [ -1 ]
+  }      
 ]
 
 instance_group [

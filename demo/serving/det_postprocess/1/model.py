@@ -64,16 +64,16 @@ class TritonPythonModel:
 
         self.postprocess_ = fd.vision.detection.PaddleDetPostprocessor()
 
-    def filter(self, results):
+    def filter(self, results, sens):
         boxes = []
         labels = []
         origin0 = []
         for res_i, result in enumerate(results):
             for s_i, score in enumerate(result.scores):
-                if score > 0.8:
+                if score > 0.3 * (sens[0] + 1):
                     origin0.append(res_i)
                     boxes.append(result.boxes[s_i])
-                    labels.append(result.label_ids[s_i])           
+                    labels.append(result.label_ids[s_i])      
         return np.array(boxes, dtype=np.float32), np.array(labels, dtype=np.uint8), np.array(origin0, dtype=np.uint8)
 
     def execute(self, requests):
@@ -102,8 +102,7 @@ class TritonPythonModel:
             det_post_in2 = pb_utils.get_input_tensor_by_name(request, "det_post_in2")
             results = self.postprocess_.run([det_post_in1.as_numpy(), det_post_in2.as_numpy()])
             sens = pb_utils.get_input_tensor_by_name(request, "sens").as_numpy()
-            print(sens[0])
-            boxes, labels, origin0 = self.filter(results)
+            boxes, labels, origin0 = self.filter(results, sens)
             out_box_tensor = pb_utils.Tensor(self.output_names[0], boxes)
             out_label_tensor = pb_utils.Tensor(self.output_names[1], labels)
             out_origin0_tensor = pb_utils.Tensor(self.output_names[2], origin0)

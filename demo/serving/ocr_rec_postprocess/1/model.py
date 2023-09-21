@@ -89,17 +89,24 @@ class TritonPythonModel:
         """
         responses = []
         for request in requests:
-            infer_outputs = pb_utils.get_input_tensor_by_name(
-                request, self.input_names[0])
-            infer_outputs = infer_outputs.as_numpy()
-            results = self.postprocessor.run([infer_outputs])
+            rec_predict = pb_utils.get_input_tensor_by_name(request, self.input_names[0])
+            rec_predict = rec_predict.as_numpy()
+            labels = pb_utils.get_input_tensor_by_name(request, self.input_names[1])
+            labels = labels.as_numpy()
+            origin0 = pb_utils.get_input_tensor_by_name(request, self.input_names[2])
+            origin0 = origin0.as_numpy()
+            origin1 = pb_utils.get_input_tensor_by_name(request, self.input_names[3])
+            origin1 = origin1.as_numpy()
+            results = self.postprocessor.run([rec_predict])
             out_tensor_0 = pb_utils.Tensor(
                 self.output_names[0], np.array(
                     results[0], dtype=np.object_))
-            out_tensor_1 = pb_utils.Tensor(self.output_names[1],
-                                           np.array(results[1]))
+            out_tensor_1 = pb_utils.Tensor(self.output_names[1], np.array(results[1]))
+            out_tensor_2 = pb_utils.Tensor(self.output_names[2], labels)
+            out_tensor_3 = pb_utils.Tensor(self.output_names[3], origin0)
+            out_tensor_4 = pb_utils.Tensor(self.output_names[4], origin1)
             inference_response = pb_utils.InferenceResponse(
-                output_tensors=[out_tensor_0, out_tensor_1])
+                output_tensors=[out_tensor_0, out_tensor_1, out_tensor_2, out_tensor_3, out_tensor_4])
             responses.append(inference_response)
         return responses
 
