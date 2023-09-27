@@ -68,6 +68,17 @@ class TritonPythonModel:
         file_name = dir_name + "ppocr_keys_v1.txt"
         self.postprocessor = fd.vision.ocr.RecognizerPostprocessor(file_name)
 
+    def filter(self, results, origin1, sens):
+        ocr_rec_text = []
+        ocr_rec_conf = []
+        filter_origin1 = []
+        for index, conf in enumerate(results[1]):
+            if conf > 0.3 * (sens[1] + 1):
+                ocr_rec_text.append(results[0][index])
+                ocr_rec_conf.append(results[1][index])
+                filter_origin1.append(origin1[index])
+        return np.array(ocr_rec_text, dtype=np.object_), np.array(ocr_rec_conf), np.array(filter_origin1)
+
     def execute(self, requests):
         """`execute` must be implemented in every Python model. `execute`
         function receives a list of pb_utils.InferenceRequest as the only
@@ -91,22 +102,26 @@ class TritonPythonModel:
         for request in requests:
             rec_predict = pb_utils.get_input_tensor_by_name(request, self.input_names[0])
             rec_predict = rec_predict.as_numpy()
-            labels = pb_utils.get_input_tensor_by_name(request, self.input_names[1])
+            det_area = pb_utils.get_input_tensor_by_name(request, self.input_names[1])
+            det_area = det_area.as_numpy()
+            labels = pb_utils.get_input_tensor_by_name(request, self.input_names[2])
             labels = labels.as_numpy()
-            origin0 = pb_utils.get_input_tensor_by_name(request, self.input_names[2])
+            origin0 = pb_utils.get_input_tensor_by_name(request, self.input_names[3])
             origin0 = origin0.as_numpy()
-            origin1 = pb_utils.get_input_tensor_by_name(request, self.input_names[3])
+            origin1 = pb_utils.get_input_tensor_by_name(request, self.input_names[4])
             origin1 = origin1.as_numpy()
+            sens = pb_utils.get_input_tensor_by_name(request, self.input_names[5])
+            sens = sens.as_numpy()
             results = self.postprocessor.run([rec_predict])
-            out_tensor_0 = pb_utils.Tensor(
-                self.output_names[0], np.array(
-                    results[0], dtype=np.object_))
-            out_tensor_1 = pb_utils.Tensor(self.output_names[1], np.array(results[1]))
-            out_tensor_2 = pb_utils.Tensor(self.output_names[2], labels)
-            out_tensor_3 = pb_utils.Tensor(self.output_names[3], origin0)
-            out_tensor_4 = pb_utils.Tensor(self.output_names[4], origin1)
+            ocr_rec_text, ocr_rec_conf, filter_origin1 = self.filter(results, origin1, sens)
+            out_tensor_0 = pb_utils.Tensor(self.output_names[0], ocr_rec_text)
+            out_tensor_1 = pb_utils.Tensor(self.output_names[1], ocr_rec_conf)
+            out_tensor_2 = pb_utils.Tensor(self.output_names[2], det_area)
+            out_tensor_3 = pb_utils.Tensor(self.output_names[3], labels)
+            out_tensor_4 = pb_utils.Tensor(self.output_names[4], origin0)
+            out_tensor_5 = pb_utils.Tensor(self.output_names[5], filter_origin1)
             inference_response = pb_utils.InferenceResponse(
-                output_tensors=[out_tensor_0, out_tensor_1, out_tensor_2, out_tensor_3, out_tensor_4])
+                output_tensors=[out_tensor_0, out_tensor_1, out_tensor_2, out_tensor_3, out_tensor_4, out_tensor_5])
             responses.append(inference_response)
         return responses
 

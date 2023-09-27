@@ -9,8 +9,8 @@ input [
   },
   {
     name: "ocr_rec_post_in2"
-    data_type: TYPE_UINT8
-    dims: [ -1 ]
+    data_type: TYPE_FP32
+    dims: [ -1, 4 ]
   },
   {
     name: "ocr_rec_post_in3"
@@ -19,6 +19,16 @@ input [
   },
   {
     name: "ocr_rec_post_in4"
+    data_type: TYPE_UINT8
+    dims: [ -1 ]
+  },
+  {
+    name: "ocr_rec_post_in5"
+    data_type: TYPE_UINT8
+    dims: [ -1 ]
+  },
+  {
+    name: "ocr_rec_post_in6"
     data_type: TYPE_UINT8
     dims: [ -1 ]
   }
@@ -37,8 +47,8 @@ output [
   },
   {
     name: "ocr_rec_post_out3"
-    data_type: TYPE_UINT8
-    dims: [ -1 ]
+    data_type: TYPE_FP32
+    dims: [ -1, 4 ]
   },
   {
     name: "ocr_rec_post_out4"
@@ -47,6 +57,11 @@ output [
   },
   {
     name: "ocr_rec_post_out5"
+    data_type: TYPE_UINT8
+    dims: [ -1 ]
+  },
+  {
+    name: "ocr_rec_post_out6"
     data_type: TYPE_UINT8
     dims: [ -1 ]
   }      
