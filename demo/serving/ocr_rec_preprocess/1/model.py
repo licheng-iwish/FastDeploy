@@ -16,7 +16,7 @@ import json
 import numpy as np
 import time
 import cv2
-from shapely.geometry import Polygon
+from shapely.geometry import Polygon,LineString,Point
 import math
 import fastdeploy as fd
 
@@ -64,6 +64,7 @@ class TritonPythonModel:
             self.output_dtype.append(dtype)
         print("preprocess output names:", self.output_names)
         self.preprocessor = fd.vision.ocr.RecognizerPreprocessor()
+        self.cls_preprocessor = fd.vision.ocr.ClassifierPreprocessor()
 
     def get_seal_imgs(self, origin0, row_imgs, boxes):
         seal_imgs = []
@@ -74,7 +75,7 @@ class TritonPythonModel:
             seal_imgs.append(box_row_img)
         return seal_imgs
 
-    def polar_coordinates_expand(self, img, angle, clock_dir):
+    def polar_coordinates_expand(self, img, angle):
         x0 = img.shape[0] // 2  # 计算圆心
         y0 = img.shape[1] // 2
         unwrapped_height = img.shape[0] // 2  # 通过圆形区域半径构造展开后的图像
@@ -89,26 +90,18 @@ class TritonPythonModel:
             #              π/2
             theta = 2 * pi * (j / unwrapped_width) + angle  # 起始角度
             for i in range(unwrapped_height):
-                if clock_dir == 'clockwise':
-                    radius = int((x0 * y0) / (((x0 ** 2) * (math.cos(theta) ** 2) + (y0 ** 2) * (
+                # x = unwrapped_radius * sin(theta) + x0 - 1  # 3. "sin" is 顺时针 but "cos" is 逆时针
+                # y = unwrapped_radius * cos(theta) + y0 - 1  # 4. "sin" is 逆时针 but "cos" is 顺时针
+                radius = int((x0 * y0) / (((x0 ** 2) * (math.cos(theta) ** 2) + (y0 ** 2) * (
                         math.sin(theta) ** 2)) ** 0.5))
-                    unwrapped_radius = radius - i  # 2. don't forget
-                    x = unwrapped_radius * sin(theta) + x0 - 1  # 3. "sin" is 顺时针 but "cos" is 逆时针
-                    y = unwrapped_radius * cos(theta) + y0 - 1  # 4. "sin" is 逆时针 but "cos" is 顺时针
-                else:
-                    radius = int((x0 * y0) / (((x0 ** 2) * (math.sin(theta) ** 2) + (y0 ** 2) * (
-                        math.cos(theta) ** 2)) ** 0.5))
-                    unwrapped_radius = radius - i  # 2. don't forget
-                    x = unwrapped_radius * cos(theta) + x0 - 1
-                    y = unwrapped_radius * sin(theta) + y0 - 1
+                unwrapped_radius = radius - i  # 2. don't forget
+                x = unwrapped_radius * sin(theta) + x0 - 1  # 3. "sin" is 顺时针 but "cos" is 逆时针
+                y = unwrapped_radius * cos(theta) + y0 - 1  # 4. "sin" is 逆时针 but "cos" is 顺时针
                 if int(x) >= img.shape[0] or int(y) >= img.shape[1]:
                     unwrapped_img[i, j, :] = 0
                 else:
                     unwrapped_img[i, j, :] = img[int(x), int(y), :]
-        if clock_dir == 'clockwise':
-            return self.move_black(unwrapped_img)
-        else:
-            return self.move_black(cv2.flip(unwrapped_img, 0))
+        return self.move_black(unwrapped_img)
 
     def move_black(self, img):
         edges_y, edges_x, _ = np.where(img != 0)  ##h, w
@@ -133,20 +126,27 @@ class TritonPythonModel:
     def check_curvature(self, seal_img, det_boxes):
         mask_poly = Polygon(det_boxes)
         if mask_poly.area / mask_poly.minimum_rotated_rectangle.area < 0.6:  # 弯曲
-            start = min(mask_poly.exterior.coords)
+            mrrbc = mask_poly.minimum_rotated_rectangle.boundary.coords
             center = [seal_img.shape[1] / 2, seal_img.shape[0] / 2]
-            a = np.array([start[0] - center[0], start[1] - center[1]])
-            b = np.array(center)
+            for i in range(len(mrrbc) - 1):
+                line = LineString([((mrrbc[i + 1][0] + mrrbc[i][0]) / 2, (mrrbc[i + 1][1] + mrrbc[i][1]) / 2),
+                                (center[0], center[1])])
+                if not line.intersects(mask_poly):
+                    break
+            start = [(mrrbc[i + 1][0] + mrrbc[i][0]) / 2, (mrrbc[i + 1][1] + mrrbc[i][1]) / 2]
+            a = np.array([start[0] - center[0], center[1] - start[1]])
+            b = np.array([1, 0])
             cos_angle = a.dot(b) / (np.linalg.norm(a) * np.linalg.norm(b))
             angle = np.arccos(cos_angle)
-            if mask_poly.centroid.y < center[0]:
-                return angle, "clockwise"
-            else:
-                return angle, "anticlockwise"    
-        return None, None
+            if start[1] < center[1]:
+                angle = 2 * math.pi - angle
+            if not Point(center).within(mask_poly.minimum_rotated_rectangle):
+                angle = math.pi + angle
+            return angle
+        return None
 
     def get_seal_rec_imgs(self, origin1, labels, seal_imgs, ocr_det_boxes, ocr_det_boxes_len):
-        seal_rec_imgs = []    
+        seal_rec_imgs = []
         ocr_det_boxes_len_start = 0
         for i in range(origin1.shape[0]):
             seal_img = seal_imgs[origin1[i]]
@@ -155,20 +155,51 @@ class TritonPythonModel:
             rec_area_img = self.intercept_rec_area(seal_img, box)
             if labels[origin1[i]] == 1 or labels[origin1[i]] == 3:
                 rec_area_img = self.move_black(rec_area_img)
-                seal_rec_imgs.append(rec_area_img.copy())
+                seal_rec_imgs.append(rec_area_img)
             else:
-                angle, clock_dir = self.check_curvature(seal_img, box)
+                angle = self.check_curvature(seal_img, box)
                 if angle == None:
                     rec_area_img = self.move_black(rec_area_img)
-                    seal_rec_imgs.append(rec_area_img.copy())
+                    seal_rec_imgs.append(rec_area_img)
                 else:
                     try: 
-                        rec_area_img = self.polar_coordinates_expand(rec_area_img, angle, clock_dir)
+                        rec_area_img = self.polar_coordinates_expand(rec_area_img, angle)
                     except:
                         print("polar_coordinates_expand error")
                     else:
-                        seal_rec_imgs.append(rec_area_img.copy())               
-        return seal_rec_imgs    
+                        seal_rec_imgs.append(rec_area_img)    
+        return seal_rec_imgs 
+
+    def ocr_cls_deal(self, rec_imgs):
+        cls_imgs = []
+        cls_dealed_imgs = []
+        for rec_img in rec_imgs:
+            cls_imgs.append(rec_img.copy())
+        cls_pre_tensors = self.cls_preprocessor.run(cls_imgs)
+        cls_dlpack_tensor = cls_pre_tensors[0].to_dlpack()
+        cls_input_tensor = pb_utils.Tensor.from_dlpack(
+            "OCR_CLS_RUNTIME_IN", cls_dlpack_tensor)
+
+        inference_request = pb_utils.InferenceRequest(
+            model_name='ocr_cls_pp',
+            requested_output_names=['OCR_CLS_POST_OUT'],
+            inputs=[cls_input_tensor])
+        inference_response = inference_request.exec()
+        if inference_response.has_error():
+            raise pb_utils.TritonModelException(
+                inference_response.error().message())
+        else:
+            # Extract the output tensors from the inference response.
+            cls_labels = pb_utils.get_output_tensor_by_name(
+                inference_response, 'OCR_CLS_POST_OUT')
+            cls_labels = cls_labels.as_numpy()
+            for i, cls_label in enumerate(cls_labels):
+                if cls_label == 1:
+                    rec_img = cv2.rotate(rec_imgs[i], cv2.ROTATE_180)
+                else:
+                    rec_img = rec_imgs[i].copy()
+                cls_dealed_imgs.append(rec_img)
+            return cls_dealed_imgs
 
     def execute(self, requests):
         """`execute` must be implemented in every Python model. `execute`
@@ -214,7 +245,8 @@ class TritonPythonModel:
             ocr_det_boxes_len = ocr_det_boxes_len.as_numpy()                                              
             seal_imgs = self.get_seal_imgs(origin0, row_imgs, boxes)
             seal_rec_imgs = self.get_seal_rec_imgs(origin1, labels, seal_imgs, ocr_det_boxes, ocr_det_boxes_len)
-            outputs = self.preprocessor.run(seal_rec_imgs)
+            cls_dealed_imgs = self.ocr_cls_deal(seal_rec_imgs)
+            outputs = self.preprocessor.run(cls_dealed_imgs)
             dlpack_tensor = outputs[0].to_dlpack()
             output_tensor = pb_utils.Tensor.from_dlpack(self.output_names[0],
                                                           dlpack_tensor)
