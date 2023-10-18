@@ -16,11 +16,6 @@ input [
     name: "ocr_det_pre_in3"
     data_type: TYPE_UINT8
     dims: [ -1 ]
-  },
-  {
-    name: "ocr_det_pre_in4"
-    data_type: TYPE_UINT8
-    dims: [ -1 ]
   }
 ]
 

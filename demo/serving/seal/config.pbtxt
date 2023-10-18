@@ -131,10 +131,6 @@ ensemble_scheduling {
       },
       input_map {
         key: "ocr_det_pre_in3"
-        value: "DET_POST_OUT2"
-      },
-      input_map {
-        key: "ocr_det_pre_in4"
         value: "DET_POST_OUT3"
       },
       output_map {
