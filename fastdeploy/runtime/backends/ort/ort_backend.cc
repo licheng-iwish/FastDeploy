@@ -31,6 +31,16 @@ namespace fastdeploy {
 std::vector<OrtCustomOp*> OrtBackend::custom_operators_ =
     std::vector<OrtCustomOp*>();
 
+std::wstring ToWstring(const std::string &str) {
+  unsigned len = str.size() * 2;
+  setlocale(LC_CTYPE, "");
+  wchar_t *p = new wchar_t[len];
+  mbstowcs(p, str.c_str(), len);
+  std::wstring wstr(p);
+  delete[] p;
+  return wstr;
+}
+
 bool OrtBackend::BuildOption(const OrtBackendOption& option) {
   option_ = option;
   if (option.graph_optimization_level >= 0) {
@@ -45,6 +55,14 @@ bool OrtBackend::BuildOption(const OrtBackendOption& option) {
   }
   if (option.execution_mode >= 0) {
     session_options_.SetExecutionMode(ExecutionMode(option.execution_mode));
+  }
+  if (!option.optimized_model_filepath.empty()) {
+#if (defined(_WIN32) || defined(_WIN64))      
+    session_options_.SetOptimizedModelFilePath(
+      ToWstring(option.optimized_model_filepath).c_str());
+#else
+    session_options_.SetOptimizedModelFilePath(option.optimized_model_filepath.c_str());
+#endif    
   }
 
 #ifdef WITH_DIRECTML
