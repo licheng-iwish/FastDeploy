@@ -14,7 +14,6 @@
 
 import json
 import numpy as np
-import time
 
 import fastdeploy as fd
 
@@ -73,7 +72,11 @@ class TritonPythonModel:
                 if score > 0.3 * (sens[0] + 1):
                     origin0.append(res_i)
                     boxes.append(result.boxes[s_i])
-                    labels.append(result.label_ids[s_i])      
+                    labels.append(result.label_ids[s_i])
+
+        if len(boxes) == 0:
+            raise Exception("ZXT-ERROR<印章识别有效印章数为零>")
+
         return np.array(boxes, dtype=np.float32), np.array(labels, dtype=np.uint8), np.array(origin0, dtype=np.uint8)
 
     def execute(self, requests):
@@ -97,7 +100,6 @@ class TritonPythonModel:
         """
         responses = []
         for request in requests:
-            infer_outputs = []
             det_post_in1 = pb_utils.get_input_tensor_by_name(request, "det_post_in1")
             det_post_in2 = pb_utils.get_input_tensor_by_name(request, "det_post_in2")
             results = self.postprocess_.run([det_post_in1.as_numpy(), det_post_in2.as_numpy()])

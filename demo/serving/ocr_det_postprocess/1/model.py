@@ -102,6 +102,10 @@ class TritonPythonModel:
                     origin1.append(r_i)
                     ocr_det_boxes_len.append(len(boxes))
                     ocr_det_boxes += boxes
+
+            if len(ocr_det_boxes) == 0:
+                raise Exception("ZXT-ERROR<印章识别有效文字区域数为零>")
+
             out_tensor0 = pb_utils.Tensor(self.output_names[0], np.array(origin1, np.uint8))
             out_tensor1 = pb_utils.Tensor(self.output_names[1], np.array(ocr_det_boxes, np.int32))
             out_tensor2 = pb_utils.Tensor(self.output_names[2], np.array(ocr_det_boxes_len, np.int32))
