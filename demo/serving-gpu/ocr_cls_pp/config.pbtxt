@@ -1,0 +1,44 @@
+name: "ocr_cls_pp"
+platform: "ensemble"
+input [
+  {
+    name: "OCR_CLS_RUNTIME_IN"
+    data_type: TYPE_FP32
+    dims: [ -1, 3, -1, -1 ]
+  }
+]
+output [
+  {
+    name: "OCR_CLS_POST_OUT"
+    data_type: TYPE_UINT8
+    dims: [ -1 ]
+  }
+]
+ensemble_scheduling {
+  step [
+    {
+      model_name: "ocr_cls_runtime"
+      model_version: 1
+      input_map {
+        key: "x"
+        value: "OCR_CLS_RUNTIME_IN"
+      }
+      output_map {
+        key: "softmax_0.tmp_0"
+        value: "OCR_CLS_RUNTIME_OUT"
+      }
+    },
+    {
+      model_name: "ocr_cls_postprocess"
+      model_version: 1
+      input_map {
+        key: "ocr_cls_post_in"
+        value: "OCR_CLS_RUNTIME_OUT"
+      }
+      output_map {
+        key: "ocr_cls_post_out"
+        value: "OCR_CLS_POST_OUT"
+      }
+    }
+  ]
+}

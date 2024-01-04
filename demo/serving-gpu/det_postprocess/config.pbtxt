@@ -1,0 +1,45 @@
+name: "det_postprocess"
+backend: "python"
+
+input [
+  {
+    name: "sens"
+    data_type: TYPE_UINT8
+    dims: [ -1 ]
+  },
+  {
+    name: "det_post_in1"
+    data_type: TYPE_FP32
+    dims: [ -1, 6 ]
+  },
+  {
+    name: "det_post_in2"
+    data_type: TYPE_INT32
+    dims: [ -1 ]
+  }
+]
+
+output [
+  {
+    name: "det_post_out1"
+    data_type: TYPE_FP32
+    dims: [ -1, 4 ]
+  },
+  {
+    name: "det_post_out2"
+    data_type: TYPE_UINT8
+    dims: [ -1 ]
+  },
+  {
+    name: "det_post_out3"
+    data_type: TYPE_UINT8
+    dims: [ -1 ]
+  }
+]
+
+instance_group [
+  {
+      count: 2
+      kind: KIND_GPU
+  }
+]

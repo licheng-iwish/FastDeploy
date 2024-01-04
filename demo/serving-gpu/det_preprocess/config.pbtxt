@@ -1,0 +1,35 @@
+name: "det_preprocess"
+backend: "python"
+
+input [
+  {
+    name: "det_pre_in"
+    data_type: TYPE_UINT8
+    dims: [ -1, -1, -1, 3 ]
+  }
+]
+
+output [
+  {
+    name: "det_pre_out1"
+    data_type: TYPE_FP32
+    dims: [ -1, 3, -1, -1 ]
+  },
+  {
+    name: "det_pre_out2"
+    data_type: TYPE_FP32
+    dims: [ -1, 2 ]
+  },
+  {
+    name: "det_pre_out3"
+    data_type: TYPE_FP32
+    dims: [ -1, 2 ]
+  }
+]
+
+instance_group [
+  {
+      count: 1
+      kind: KIND_GPU
+  }
+]
