@@ -1,6 +1,6 @@
 # optional, If name is specified it must match the name of the model repository directory containing the model.
 name: "ocr_cls_runtime"
-backend: "paddle"
+backend: "fastdeploy"
 
 # Input configuration of the model
 input [
