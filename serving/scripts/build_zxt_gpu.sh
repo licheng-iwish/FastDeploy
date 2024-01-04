@@ -81,12 +81,12 @@ if [ ! -d "./TensorRT-${trt_version}/" ]; then
     rm -rf TensorRT-${trt_version}.Linux.x86_64-gnu.cuda-${cuda_version}.cudnn${cudnn_version}.tar.gz
 fi
 
-nvidia-docker run -i --rm --name ${docker_name} \
+docker run -i --rm --name ${docker_name} \
            -v`pwd`/..:/workspace/fastdeploy \
            -e "http_proxy=${http_proxy}" \
            -e "https_proxy=${https_proxy}" \
            -e "trt_version=${trt_version}"\
-           nvidia/cuda:11.2.2-cudnn8-devel-ubuntu20.04  \
+           paddlepaddle/fastdeploy:cuda11.6-23.12  \
            bash -c \
            'export https_proxy_tmp=${https_proxy}
             export http_proxy_tmp=${http_proxy}
@@ -117,7 +117,7 @@ nvidia-docker run -i --rm --name ${docker_name} \
             rm -rf build; mkdir build; cd build;
             export https_proxy=${https_proxy_tmp}
             export http_proxy=${http_proxy_tmp}
-            cmake .. -DFASTDEPLOY_DIR=/workspace/fastdeploy/build/fastdeploy_install -DTRITON_COMMON_REPO_TAG=r21.10 -DTRITON_CORE_REPO_TAG=r21.10 -DTRITON_BACKEND_REPO_TAG=r21.10;
+            cmake .. -DFASTDEPLOY_DIR=/workspace/fastdeploy/build/fastdeploy_install -DTRITON_COMMON_REPO_TAG=23.12 -DTRITON_CORE_REPO_TAG=23.12 -DTRITON_BACKEND_REPO_TAG=23.12;
             make -j`nproc`'
 
 echo "build FD GPU library done"
