@@ -24,7 +24,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Asia/Shanghai apt-get in
     libssl-dev zlib1g-dev rapidjson-dev libboost-dev libre2-dev librdmacm-dev libnuma-dev libarchive-dev unzip && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN python3 -m pip install --upgrade pip && python3 -m pip install redis
+RUN python3 -m pip install --upgrade pip && python3 -m pip install redis -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 # install cmake
 WORKDIR /home
