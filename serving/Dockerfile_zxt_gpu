@@ -19,7 +19,7 @@ ARG http_proxy
 ARG https_proxy
 
 #Install the build dependencies
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Asia/Shanghai apt-get install -y --no-install-recommends rapidjson-dev zlib1g-dev
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Asia/Shanghai apt-get install -y --no-install-recommends rapidjson-dev zlib1g-dev libgl1
 
 # install cmake
 WORKDIR /home
@@ -53,6 +53,7 @@ RUN git clone https://github.com/triton-inference-server/server.git -b $TAG && \
 
 COPY python/dist/*.whl /opt/fastdeploy/
 RUN python3 -m pip install  /opt/fastdeploy/*.whl \
+    && python3 -m pip install shapely -i https://pypi.tuna.tsinghua.edu.cn/simple \
     && rm -rf /opt/fastdeploy/*.whl
 
 
@@ -69,7 +70,9 @@ COPY serving/build/libtriton_fastdeploy.so /opt/tritonserver/backends/fastdeploy
 RUN mv /opt/tritonserver/bin/tritonserver /opt/tritonserver/bin/fastdeployserver
 
 # copy compiled fastdeploy_install into image
-COPY build/fastdeploy_install/* /opt/fastdeploy/
+COPY build/fastdeploy_install/ /opt/fastdeploy/
+
+RUN rm -r -f /home/*
 
 # Set environment variable
 ENV LD_LIBRARY_PATH="/opt/fastdeploy/lib:/opt/fastdeploy/third_libs/install/onnxruntime/lib:/opt/fastdeploy/third_libs/install/paddle2onnx/lib:/opt/fastdeploy/third_libs/install/paddle_inference/paddle/lib:/opt/fastdeploy/third_libs/install/openvino/runtime/lib/:/opt/fastdeploy/third_libs/install/tensorrt/lib/:/opt/fastdeploy/third_libs/install/opencv/lib64/:$LD_LIBRARY_PATH"
