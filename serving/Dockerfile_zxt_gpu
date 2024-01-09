@@ -19,7 +19,7 @@ ARG http_proxy
 ARG https_proxy
 
 #Install the build dependencies
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Asia/Shanghai apt-get install -y --no-install-recommends rapidjson-dev zlib1g-dev libgl1
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive TZ=Asia/Shanghai apt-get install -y --no-install-recommends rapidjson-dev zlib1g-dev libgl1 datacenter-gpu-manager
 
 # install cmake
 WORKDIR /home
@@ -43,6 +43,8 @@ RUN git clone https://github.com/triton-inference-server/server.git -b $TAG && \
      --enable-tracing \
      --enable-logging \
      --enable-metrics \
+     --enable-gpu-metrics \
+     --enable-cpu-metrics \
      --enable-nvtx \
      --cmake-dir `pwd` \
      --repo-tag=common:$TAG \
@@ -71,8 +73,6 @@ RUN mv /opt/tritonserver/bin/tritonserver /opt/tritonserver/bin/fastdeployserver
 
 # copy compiled fastdeploy_install into image
 COPY build/fastdeploy_install/ /opt/fastdeploy/
-
-RUN rm -r -f /home/*
 
 # Set environment variable
 ENV LD_LIBRARY_PATH="/opt/fastdeploy/lib:/opt/fastdeploy/third_libs/install/onnxruntime/lib:/opt/fastdeploy/third_libs/install/paddle2onnx/lib:/opt/fastdeploy/third_libs/install/paddle_inference/paddle/lib:/opt/fastdeploy/third_libs/install/openvino/runtime/lib/:/opt/fastdeploy/third_libs/install/tensorrt/lib/:/opt/fastdeploy/third_libs/install/opencv/lib64/:$LD_LIBRARY_PATH"
