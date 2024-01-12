@@ -50,7 +50,31 @@ optimization {
     # GPU推理配置， 配合KIND_GPU使用
     gpu_execution_accelerator : [
       {
-        name : "paddle"
+        name : "tensorrt"
+        # 使用TensorRT的FP16推理,其他可选项为: trt_fp32
+        # 如果加载的是量化模型，此精度设置无效，会默认使用int8进行推理
+        parameters { key: "precision" value: "trt_fp16" }
+      },
+      {
+        # Configure the minimum shape of dynamic shape
+        name: "min_shape"
+        # All input name and minimum shape
+        parameters { key: "image" value: "1 3 640 640" }
+        parameters { key: "scale_factor" value: "1 2" }
+      },
+      {
+        # Configure the optimal shape of dynamic shape
+        name: "opt_shape"
+        # All input name and optimal shape
+        parameters { key: "image" value: "1 3 640 640" }
+        parameters { key: "scale_factor" value: "1 2" }
+      },
+      {
+        # Configure the maximum shape of dynamic shape
+        name: "max_shape"
+        # All input name and maximum shape
+        parameters { key: "image" value: "8 3 640 640" }
+        parameters { key: "scale_factor" value: "8 2" }
       }
     ]
   }
