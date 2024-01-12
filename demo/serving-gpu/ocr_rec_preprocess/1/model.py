@@ -145,6 +145,13 @@ class TritonPythonModel:
             return angle
         return None
 
+    def matrix_leveling(self, src, box):
+        rect = cv2.minAreaRect(np.asarray(box))
+        rows, cols, _ = src.shape
+        M = cv2.getRotationMatrix2D((cols / 2, rows / 2), rect[2], 1.0)
+        warpAffine_img = cv2.warpAffine(src, M=M, dsize=(cols, rows))
+        return warpAffine_img
+
     def get_seal_rec_imgs(self, origin1, labels, seal_imgs, ocr_det_boxes, ocr_det_boxes_len):
         seal_rec_imgs = []
         ocr_det_boxes_len_start = 0
@@ -154,11 +161,13 @@ class TritonPythonModel:
             ocr_det_boxes_len_start += ocr_det_boxes_len[i]
             rec_area_img = self.intercept_rec_area(seal_img, box)
             if labels[origin1[i]] == 1 or labels[origin1[i]] == 3:
+                rec_area_img = self.matrix_leveling(rec_area_img, box)
                 rec_area_img = self.move_black(rec_area_img)
                 seal_rec_imgs.append(rec_area_img)
             else:
                 angle = self.check_curvature(seal_img, box)
                 if angle == None:
+                    rec_area_img = self.matrix_leveling(rec_area_img, box)
                     rec_area_img = self.move_black(rec_area_img)
                     seal_rec_imgs.append(rec_area_img)
                 else:
